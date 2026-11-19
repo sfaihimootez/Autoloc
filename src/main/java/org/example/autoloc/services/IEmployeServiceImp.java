@@ -6,6 +6,8 @@ import org.example.autoloc.entities.Employe;
 import org.example.autoloc.repositories.AgenceRepository;
 import org.example.autoloc.repositories.EmployeRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -23,6 +25,9 @@ public class IEmployeServiceImp implements IEmployeService {
 
     @Override
     public Employe modifierEmploye(Employe employe) {
+        if (employe.getIdEmploye() == 0 || !employeRepository.existsById(employe.getIdEmploye())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employé introuvable");
+        }
         return employeRepository.save(employe);
     }
 
@@ -33,18 +38,20 @@ public class IEmployeServiceImp implements IEmployeService {
 
     @Override
     public Employe consulterEmployeById(Long idEmploye) {
-        return employeRepository.findById(idEmploye).orElse(null);
+        return employeRepository.findById(idEmploye)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employé introuvable"));
     }
 
     @Override
     public void supprimerEmployeById(Long idEmploye) {
+        consulterEmployeById(idEmploye);
         employeRepository.deleteById(idEmploye);
     }
 
     @Override
     public Employe desaffecterEmploye(Long idEmploye) {
         Employe employe = employeRepository.findById(idEmploye)
-                .orElseThrow(() -> new IllegalArgumentException("Employé introuvable : " + idEmploye));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employé introuvable"));
         employe.setAgence(null);
         return employeRepository.save(employe);
     }
@@ -52,9 +59,9 @@ public class IEmployeServiceImp implements IEmployeService {
     @Override
     public Employe affecterEmploye(Long idEmploye, Long idAgence) {
         Employe employe = employeRepository.findById(idEmploye)
-                .orElseThrow(() -> new IllegalArgumentException("Employé introuvable : " + idEmploye));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employé introuvable"));
         Agence agence = agenceRepository.findById(idAgence)
-                .orElseThrow(() -> new IllegalArgumentException("Agence introuvable : " + idAgence));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agence introuvable"));
         employe.setAgence(agence);
         return employeRepository.save(employe);
     }

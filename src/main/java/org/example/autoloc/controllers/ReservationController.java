@@ -1,5 +1,7 @@
 package org.example.autoloc.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.example.autoloc.entities.Reservation;
 import org.example.autoloc.services.IReservationService;
@@ -13,14 +15,23 @@ import java.util.List;
 public class ReservationController {
 
     private final IReservationService reservationService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping
     public Reservation ajouter(@RequestBody Reservation reservation) {
         return reservationService.ajouterReservation(reservation);
     }
 
-    @PutMapping
-    public Reservation modifier(@RequestBody Reservation reservation) {
+    @PutMapping("/{id}")
+    public Reservation modifier(@PathVariable Long id, @RequestBody Reservation reservation) {
+        reservation.setIdReservation(id);
+        return reservationService.modifierReservation(reservation);
+    }
+
+    @PatchMapping("/{id}")
+    public Reservation patch(@PathVariable Long id, @RequestBody JsonNode patch) {
+        Reservation reservation = PatchUtil.apply(reservationService.consulterReservationById(id), patch, objectMapper);
+        reservation.setIdReservation(id);
         return reservationService.modifierReservation(reservation);
     }
 

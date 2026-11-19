@@ -7,6 +7,8 @@ import org.example.autoloc.repositories.AgenceRepository;
 import org.example.autoloc.repositories.VehiculeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -41,6 +43,9 @@ public class IAgenceServiceImp implements IAgenceService {
 
     @Override
     public Agence modifierAgence(Agence agence) {
+        if (agence.getIdAgence() == null || !agenceRepository.existsById(agence.getIdAgence())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Agence introuvable");
+        }
         return agenceRepository.save(agence);
     }
 
@@ -51,11 +56,13 @@ public class IAgenceServiceImp implements IAgenceService {
 
     @Override
     public Agence consulterAgenceById(Long idAgence) {
-        return agenceRepository.findById(idAgence).orElse(null);
+        return agenceRepository.findById(idAgence)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agence introuvable"));
     }
 
     @Override
     public void supprimerAgenceById(Long idAgence) {
+        consulterAgenceById(idAgence);
         agenceRepository.deleteById(idAgence);
     }
 }

@@ -1,5 +1,7 @@
 package org.example.autoloc.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.example.autoloc.entities.Contrat;
 import org.example.autoloc.services.IContratService;
@@ -13,14 +15,23 @@ import java.util.List;
 public class ContratController {
 
     private final IContratService contratService;
+    private final ObjectMapper objectMapper;
 
     @PostMapping
     public Contrat ajouterContrat(@RequestBody Contrat contrat) {
         return contratService.ajouterContrat(contrat);
     }
 
-    @PutMapping
-    public Contrat modifierContrat(@RequestBody Contrat contrat) {
+    @PutMapping("/{idContrat}")
+    public Contrat modifierContrat(@PathVariable Long idContrat, @RequestBody Contrat contrat) {
+        contrat.setIdContrat(idContrat);
+        return contratService.modifierContrat(contrat);
+    }
+
+    @PatchMapping("/{idContrat}")
+    public Contrat patch(@PathVariable Long idContrat, @RequestBody JsonNode patch) {
+        Contrat contrat = PatchUtil.apply(contratService.consulterContratById(idContrat), patch, objectMapper);
+        contrat.setIdContrat(idContrat);
         return contratService.modifierContrat(contrat);
     }
 
