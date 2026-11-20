@@ -9,15 +9,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class IAgenceServiceImp implements IAgenceService {
 
+    private static final Logger logger = LoggerFactory.getLogger(IAgenceServiceImp.class);
+    private static final ZoneId TUNIS_TIME_ZONE = ZoneId.of("Africa/Tunis");
+
     private final AgenceRepository agenceRepository;
     private final VehiculeRepository vehiculeRepository;
+
+    @Scheduled(fixedDelay = 120_000)
+    public void suivreNombreAgences() {
+        List<Agence> agences = agenceRepository.findAll();
+        LocalDateTime dateHeure = LocalDateTime.now(TUNIS_TIME_ZONE);
+        logger.info("Suivi des agences : {} agence(s) enregistrée(s) à {}", agences.size(), dateHeure);
+    }
 
     @Override
     public Agence ajouterAgence(Agence agence) {

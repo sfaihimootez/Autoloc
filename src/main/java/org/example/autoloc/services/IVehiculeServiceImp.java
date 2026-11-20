@@ -10,7 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -18,8 +23,26 @@ import java.util.ArrayList;
 @AllArgsConstructor
 public class IVehiculeServiceImp implements IVehiculeService {
 
+    private static final Logger logger = LoggerFactory.getLogger(IVehiculeServiceImp.class);
+    private static final ZoneId TUNIS_TIME_ZONE = ZoneId.of("Africa/Tunis");
+
     private final VehiculeRepository vehiculeRepository;
     private final EquipementRepository equipementRepository;
+
+    @Scheduled(initialDelay = 5_000, fixedRate = 60_000)
+    public void actualiserEtatVehicules() {
+        List<Vehicule> vehicules = vehiculeRepository.findAll();
+        LocalDateTime dateHeure = LocalDateTime.now(TUNIS_TIME_ZONE);
+        logger.info("Actualisation des véhicules : {} véhicule(s) enregistré(s) à {}", vehicules.size(), dateHeure);
+    }
+
+    @Scheduled(cron = "0 0 9 * * MON", zone = "Africa/Tunis")
+    public void genererRapportVehicules() {
+        List<Vehicule> vehicules = vehiculeRepository.findAll();
+        LocalDateTime dateHeure = LocalDateTime.now(TUNIS_TIME_ZONE);
+        logger.info("Rapport périodique des véhicules : {} véhicule(s) enregistré(s), généré le {}",
+                vehicules.size(), dateHeure);
+    }
 
     @Override
     public Vehicule ajouterVehicule(Vehicule vehicule) {
